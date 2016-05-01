@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# a script to setup the directories for an experiment
+# usage: carlaseq_make_experiment EXPERIMENT_NAME
+
+if [ -z "$1" ]; then
+	echo ""
+	echo "Usage: carlaseq_make_experiment EXPERIMENT_NAME"
+	echo ""
+	#echo ""
+	exit 1
+fi
+
+BIN_DIR=$(dirname $(which ${BASH_SOURCE[0]}))
+PRJ_DIR=$(dirname $BIN_DIR)
+DATA_DIR=${PRJ_DIR}/share/carlaseq/data
+TEMPLATE_DIR=${PRJ_DIR}/share/carlaseq/templates
+
+echo "Making experiment directory: $1"
+
+TYPE="Create"
+if [ -d "$1" ]; then
+	TYPE="Upgrade"
+fi
+
+cmd="mkdir -p $1/00-raw $1/00-raw-fastqc $1/01-demux $1/02-trimmomatic $1/03-kraken $1/04-seqsets $1/05-pear $1/06-fq2fa $1/07-cluster $1/08-filter-size $1/09-blastprobes"
+echo $cmd
+$cmd
+
+# add log entry
+echo  "`date '+%Y-%m-%d %H:%M:%S'`: $TYPE Experiment: $1" >> $1/process.log
+
+# create slurm.conf file if not exists
+if [ ! -f $1/slurm.conf ]; then
+	cat ${TEMPLATE_DIR}/slurm.conf > $1/slurm.conf
+fi
+
+# create adapter file
+if [ ! -f $1/02-trimmomatic/adapter.fa ]; then
+	cat ${DATA_DIR}/adapter.fa > $1/02-trimmomatic/adapter.fa
+fi
+
+echo "Done"
