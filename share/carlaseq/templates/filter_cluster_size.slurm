@@ -38,11 +38,11 @@ for f in $FILES; do
 	# sed: replace newlines before each sequence
 	# tail: remove the extra newline at beginning
 	# awk: filter on size and return to fasta format
-	sed 's/;$/;\t/g' $f \
+	sed 's/;$/\t/g' $f \
 		| tr --delete '\n' \
 		| sed 's/>/\n>/g' \
 		| tail -n+2 \
-		| awk '{{split($1, v, "="); if (v[2] >= '${{CENT_SIZE}}') print $1"\n"$2}}' \
+		| awk '{{split($1, v, "="); if (v[2] >= '${{CENT_SIZE}}') print $1";\n"$2}}' \
 		  > $OUTFILE
 	
 	echo "Complete:   $(grep '^>' $OUTFILE | wc -l) of $(grep '^>' $f | wc -l) clusters passed filter (>=$CENT_SIZE cluster size)"
